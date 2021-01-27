@@ -3,8 +3,9 @@ var app = express();
 const port = 3000;
 const { Pool } = require("pg");
 const bodyParser = require("body-parser");
-const { response } = require("express");
+const { response, static } = require("express");
 
+//postgresql db connection
 const pool = new Pool({
     user: "gabriel",
     host: "localhost",
@@ -12,29 +13,35 @@ const pool = new Pool({
     password: null,
     port: 5432
 });
- 
+app.use(express.static(__dirname+"/public"));
+app.use("/scripts", express.static(__dirname+"/node_modules/jquery/dist/"));
+//These middlewares are necessary to retrieve req.body
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
-    extended: true
+    extended: false
 }))
+//"root" page
+app.get("/",(req,res)=>{
+    res.sendFile("index.html");
+})
 
 //index
-app.get("/",(req,res)=>{
+app.get("/api/todos/",(req,res)=>{
     console.log("getting todo list");
-    pool.query("SELECT * FROM todo_list",(err, results)=>{
+    pool.query("SELECT * FROM todo_list ORDER BY id ASC",(err, results)=>{
         if (err){
             throw err;
         }
         console.log("SENDING RESULTS...");
-        res.json(results.rows);
+        res.send(results.rows);
     });
 });
 
 //create
-app.post("/", (req, res)=>{
-    const { name } = req.body;
+app.post("/api/todos/:todo", (req, res)=>{
+    const  name  = req.params.todo;
     console.log("Got name")
-    pool.query(`INSERT INTO todo_list(name)VALUES($1)`,[name], (err, results)=>{
+    pool.query(`INSERT INTO todo_list(name) VALUES ($1)`,[name], (err, results)=>{
         if (err){
             throw err;
         }
@@ -45,7 +52,7 @@ app.post("/", (req, res)=>{
 })
 
 //update
-app.put("/:id",(req,res)=>{
+app.put("/api/todos/:id",(req,res)=>{
     const id = req.params.id;
     
     pool.query(`UPDATE todo_list SET completed = NOT completed WHERE id = $1 RETURNING completed`,[id],(err,newStatus)=>{
@@ -59,7 +66,7 @@ app.put("/:id",(req,res)=>{
 });
 
 //delete
-app.delete("/:id",(req, res)=>{
+app.delete("/api/todos/:id",(req, res)=>{
     const id = req.params.id;
     pool.query(`DELETE FROM todo_List WHERE id=$1`,[id],(err, results)=>{
         if (err){
