@@ -1,7 +1,8 @@
 var express = require("express");
 var app = express();
 const port = 3000;
-const { Pool } = require("pg");
+//get Pool out of it
+const  Pool  = require("pg").Pool;
 const bodyParser = require("body-parser");
 const { response, static } = require("express");
 
@@ -37,19 +38,20 @@ app.get("/api/todos/",(req,res)=>{
     });
 });
 
-//create
-app.post("/api/todos/:todo", (req, res)=>{
-    const  name  = req.params.todo;
-    console.log("Got name")
-    pool.query(`INSERT INTO todo_list(name) VALUES ($1)`,[name], (err, results)=>{
+//create-NOTE YOU NEED THE RETURNING part to get back any data of the newly created one
+//ALSO, this should not take params, it should get the data in the body, included in the post as an object
+app.post("/api/todos/", (req, res)=>{
+    const  {name}  = req.body;
+    console.log(req.body);
+    pool.query(`INSERT INTO todo_list(name) VALUES ($1) RETURNING *`,[name], (err, results)=>{
         if (err){
             throw err;
         }
-        console.log("INSERTED");
-        res.status(201).send(`Todo added with name ${name}`);
+       // console.log(results.rows[0]);
+        res.status(201).send(results);
     });
 
-})
+});
 
 //update
 app.put("/api/todos/:id",(req,res)=>{
