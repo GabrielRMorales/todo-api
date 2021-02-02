@@ -3,26 +3,34 @@ body {
     padding: 0;
     background-color: #3AAFA9;
     display: flex;
-    
     justify-content: center;
     align-items: flex-start;
     height: 100vh;
+    color: white;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
 }
 main {
   display: flex;
   flex-direction: column;
   align-items: center;
+  padding: 10px;
+  margin-top: 10px;
+  border: 2px solid white;
+  border-radius: 20px;
     
 }
-
-.completed {
+h1 {
+    text-decoration: underline;
+}
+button {
+    cursor: pointer;
+    border-radius: 5px;
+    border: none;
+}
+.completed .todo-description {
     text-decoration: line-through;
 }
 
-.delete-button span {
-    text-decoration: none;
-
-}
-span:hover {
+.delete-button:hover {
     color: red;
 }
